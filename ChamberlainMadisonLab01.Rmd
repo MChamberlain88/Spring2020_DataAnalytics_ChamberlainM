@@ -1,0 +1,327 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Creating Data Frames in R 
+
+```{r}
+days <- c('Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun')
+temp <- c(28,30.5, 32, 31.2, 29.3, 27.9, 26.4)
+snowed <- c('T', 'T', 'F', 'F', 'T', 'T', 'F')
+help("data.frame")
+RPI_Weather_Week <-data.frame(days, temp,snowed)
+head(RPI_Weather_Week)
+str(RPI_Weather_Week)
+summary(RPI_Weather_Week)
+
+RPI_Weather_Week[1,]
+RPI_Weather_Week[,1]
+RPI_Weather_Week[,'snowed']
+RPI_Weather_Week[,'days']
+RPI_Weather_Week[,'temp']
+RPI_Weather_Week[1:5, c("days", "temp")]
+RPI_Weather_Week$temp
+subset(RPI_Weather_Week, subset = snowed==TRUE)
+sorted.snowed <- order(RPI_Weather_Week['snowed'])
+sorted.snowed
+RPI_Weather_Week[sorted.snowed,]
+
+dec.snow <- order(-RPI_Weather_Week$temp)
+dec.snow
+empty.DataFrame <-data.frame()
+v1 <- 1:10
+v1
+letters
+v2 <- letters[1:10]
+df <- data.frame(col.name.1 = v1, col.name.2 = v2)
+df
+write.csv(df,file = 'saved_df1.csv')
+df2 <- read.csv('saved_df1.csv')
+df2
+```
+Loading in GPW3_GRUMP_SummaryInformation_2010 and 2010EPI_data.xls, viewing, and reformatting it
+
+```{r}
+grumpdat<- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/GPW3_GRUMP_SummaryInformation_2010.csv")
+epidat<- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/2010EPI_data.xls") 
+#data()
+
+EPI_data <- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/EPI_data.csv")
+#View(EPI_data)
+fix(EPI_data)
+EPI <- EPI_data$EPI
+tf <-is.na(EPI)
+E <-EPI[!tf]
+```
+Exercise 1: Exploting the distribution
+-Visualizing EPI_data$EPI
+```{r}
+summary(EPI)
+fivenum(EPI, na.rm=TRUE)
+stem(EPI)
+hist(EPI)
+hist(EPI, seq(30., 95.,1.0), prob = TRUE)
+lines(density(EPI, na.rm=TRUE,bw="SJ"))
+rug(EPI)
+
+plot(ecdf(EPI),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(EPI)
+qqline(EPI)
+x <-seq(30,95,1)
+qqplot(qt(ppoints(250),df=5),x,xlab="Q-Q plot for t dsn")
+qqline(x)
+```
+Visualizing EPI_data$DALY
+```{r}
+EPI_daly <- EPI_data$DALY
+summary(EPI_daly)
+fivenum(EPI_daly, na.rm=TRUE)
+stem(EPI_daly)
+hist(EPI_daly)
+hist(EPI_daly, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_daly, na.rm=TRUE,bw="SJ"))
+rug(EPI_daly)
+
+plot(ecdf(EPI_daly),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(EPI_daly)
+qqline(EPI_daly)
+x2 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x2,xlab="Q-Q plot for t dsn")
+qqline(x2)
+```
+Visualizing EPI_data$WATER_H
+```{r}
+EPI_wh <- EPI_data$WATER_H
+summary(EPI_wh)
+fivenum(EPI_wh, na.rm=TRUE)
+stem(EPI_wh)
+hist(EPI_wh)
+hist(EPI_wh, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_wh, na.rm=TRUE,bw="SJ"))
+rug(EPI_wh)
+
+plot(ecdf(EPI_wh),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(EPI_wh)
+qqline(EPI_wh)
+x3 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x3,xlab="Q-Q plot for t dsn")
+qqline(x3)
+
+#Comparing EPI and EPI_daly
+boxplot(EPI, EPI_daly)
+qqplot(EPI, EPI_daly)
+```
+
+Visualizing and comparing EPI, ENVHEALTH, ECOSYSTEM, DALY, AIR_H, WATER_h, AIR_EWATER_E, and BIODIVERSITY
+
+```{r}
+EPI_env <- EPI_data$ENVHEALTH
+summary(EPI_env)
+hist(EPI_env, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_env, na.rm=TRUE,bw="SJ"))
+rug(EPI_env)
+EPI_eco <- EPI_data$ECOSYSTEM
+summary(EPI_eco)
+hist(EPI_eco, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_eco, na.rm=TRUE,bw="SJ"))
+rug(EPI_eco)
+EPI_airh <- EPI_data$AIR_H
+summary(EPI_airh)
+hist(EPI_airh, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_airh, na.rm=TRUE,bw="SJ"))
+rug(EPI_airh)
+EPI_aire <- EPI_data$AIR_E
+summary(EPI_aire)
+EPI_we <- EPI_data$WATER_E
+summary(EPI_we)
+hist(EPI_we, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_we, na.rm=TRUE,bw="SJ"))
+rug(EPI_we)
+EPI_bio <- EPI_data$BIODIVERSITY
+summary(EPI_bio)
+hist(EPI_bio, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_bio, na.rm=TRUE,bw="SJ"))
+rug(EPI_bio)
+
+boxplot(EPI, EPI_daly, EPI_env, EPI_eco, EPI_airh, EPI_wh, EPI_aire, EPI_we, EPI_bio)
+
+```
+
+Exercise 2: filtering (populations)
+
+```{r}
+attach(EPI_data)
+#detach(EPI_data)
+EPILand<-EPI[!Landlock]
+
+
+Eland <- EPILand[!is.na(EPILand)]
+
+Eland <- as.numeric(Eland)
+hist(Eland)
+summary(Eland)
+fivenum(Eland, na.rm=TRUE)
+stem(Eland)
+hist(Eland)
+lines(density(Eland, na.rm=TRUE,bw="SJ"))
+rug(Eland)
+plot(ecdf(Eland),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(Eland)
+qqline(Eland)
+x2 <-seq(30,95,1)
+qqplot(qt(ppoints(250),df=5),x2,xlab="Q-Q plot for t dsn")
+qqline(x2)
+
+#Filter on EPI_region or Geo_subregion
+
+EPI_South_Asia <- EPI_data[which(EPI_data$EPI_region == "South Asia"),]
+summary(EPI_South_Asia)
+
+
+```
+
+Repeating exercise 1 for No_surface_water, Desert, and High_Population_Density
+
+```{r}
+EPIsurf <- EPI[!No_surface_water]
+Esurf <- EPIsurf[!is.na(EPIsurf)]
+Esurf <-as.numeric(Esurf)
+hist(Esurf)
+summary(Esurf)
+fivenum(Esurf, na.rm=TRUE)
+stem(Esurf)
+hist(Esurf)
+#hist(Eland, seq(30., 95.,1.0), prob = TRUE)
+lines(density(Esurf, na.rm=TRUE,bw="SJ"))
+rug(Esurf)
+plot(ecdf(Esurf),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(Esurf)
+qqline(Esurf)
+x2 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x2,xlab="Q-Q plot for t dsn")
+qqline(x2)
+
+EPIdes <- EPI[!Desert]
+Edes <- EPIdes[!is.na(EPIdes)]
+Edes <-as.numeric(Edes)
+hist(Edes)
+summary(Edes)
+fivenum(Edes, na.rm=TRUE)
+stem(Edes)
+hist(Edes)
+#hist(Eland, seq(30., 95.,1.0), prob = TRUE)
+lines(density(Edes, na.rm=TRUE,bw="SJ"))
+rug(Edes)
+plot(ecdf(Edes),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(Edes)
+qqline(Edes)
+x2 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x2,xlab="Q-Q plot for t dsn")
+qqline(x2)
+
+EPIpop <- EPI[!High_Population_Density]
+Epop <- EPIpop[!is.na(EPIpop)]
+Epop <-as.numeric(Epop)
+hist(Epop)
+summary(Epop)
+fivenum(Epop, na.rm=TRUE)
+stem(Epop)
+hist(Epop)
+#hist(Eland, seq(30., 95.,1.0), prob = TRUE)
+lines(density(Epop, na.rm=TRUE,bw="SJ"))
+rug(Epop)
+plot(ecdf(Epop),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(Epop)
+qqline(Epop)
+x2 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x2,xlab="Q-Q plot for t dsn")
+qqline(x2)
+
+boxplot(Eland, Esurf, Edes, Epop)
+```
+
+Analysis on the GPW3_GRUMP data
+
+```{r}
+#View(grumpdat)
+summary(grumpdat)
+fix(grumpdat)
+gpop <- grumpdat$PopulationPerUnit
+tf <-is.na(gpop)
+G <-gpop[!tf]
+summary(gpop)
+fivenum(gpop, na.rm=TRUE)
+stem(gpop)
+hist(gpop)
+#hist(gpop, seq(30., 95.,1.0), prob = TRUE)
+lines(density(gpop, na.rm=TRUE,bw="SJ"))
+rug(gpop)
+
+plot(ecdf(gpop),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(gpop)
+qqline(gpop)
+x <-seq(30,95,1)
+qqplot(qt(ppoints(250),df=5),x,xlab="Q-Q plot for t dsn")
+qqline(x)
+
+gset <- grumpdat$Num.Settlement.Points
+tf <-is.na(gset)
+G <-gset[!tf]
+summary(gset)
+fivenum(gset, na.rm=TRUE)
+stem(gset)
+hist(gset)
+#hist(gpop, seq(30., 95.,1.0), prob = TRUE)
+lines(density(gset, na.rm=TRUE,bw="SJ"))
+rug(gset)
+
+plot(ecdf(gset),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(gset)
+qqline(gset)
+x <-seq(30,95,1)
+qqplot(qt(ppoints(250),df=5),x,xlab="Q-Q plot for t dsn")
+qqline(x)
+
+gsmkm <- grumpdat$Smallest.Extent..sq.km.
+gsmkm <- gsmkm[!is.na(gsmkm)]
+gsmkm <-as.numeric(gsmkm)
+glgkm <- grumpdat$Largest.Extent..sq.km.
+glgkm <- glgkm[!is.na(glgkm)]
+glgkm<- as.numeric(glgkm)
+
+boxplot(gsmkm, glgkm)
+
+gcont <- filter(grumpdat, grumpdat$CountryEnglish == "Aruba")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
