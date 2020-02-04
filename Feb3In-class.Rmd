@@ -1,0 +1,75 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*.
+
+Linear Basis and Leas-Squares Constraints
+
+```{r}
+if (!require("dplyr")) {
+   install.packages("dplyr", dependencies = TRUE)
+   library(dplyr)
+}
+
+
+multivariate <- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/multivariate.csv")
+
+attach(multivariate)
+mm<-lm(Homeowners~Immigrant)
+names(multivariate)
+plot(Income, Immigrant, main = "Scatterplot")
+plot(Immigrant, Homeowners)
+abline(mm)
+abline(mm, col=2, lwd=3)
+
+summary(mm)
+attributes(mm)
+mm$coefficients
+
+plot(Homeowners~Immigrant)
+HP<- Homeowners/Population
+HP
+PD<-Population/area
+PD
+
+mm <- lm(Immigrant ~Income + Population + HP + PD)
+mm
+summary(mm)
+cm <-coef(mm)
+cm
+```
+Example on Pip Operator %>% in Dplyr
+```{r}
+df_mtcars <- mtcars
+head(df_mtcars)
+filter(df_mtcars, mpg > 20)
+sample_n(filter(df_mtcars, mpg > 20), 10)
+arrange(sample_n(filter(df_mtcars, mpg>20),10), desc(mpg))
+results_mpg <- arrange(sample_n(filter(df_mtcars, mpg>20),10),desc(mpg))
+results_mpg
+
+a1<- filter(df_mtcars, mpg>20)
+a1
+a2 <- sample_n(a1,5)
+a2
+
+results_mpg_des <- arrange(a2, desc(mpg))
+results_mpg_des
+
+df_mtcars %>% filter(mpg>20) %>% sample_n(5) %>% arrange(desc(mpg))
+results <- df_mtcars %>% filter(mpg>20) %>% sample_n(5) %>% arrange(desc(mpg))
+results
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
