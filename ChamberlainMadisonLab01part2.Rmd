@@ -1,0 +1,185 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+Fitting a distribution beyond histograms
+```{r}
+if (!require("magrittr")) {
+   install.packages("magrittr", dependencies = TRUE)
+   library(magrittr)
+}
+if (!require("ggplot2")) {
+   install.packages("ggplot2", dependencies = TRUE)
+   library(ggplot2)
+}
+
+epidat<- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/2010EPI_data.xls") 
+#data()
+
+EPI_data <- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/EPI_data.csv")
+#View(EPI_data)
+fix(EPI_data)
+EPI <- EPI_data$EPI
+tf <-is.na(EPI)
+E <-EPI[!tf]
+
+summary(EPI)
+fivenum(EPI, na.rm=TRUE)
+stem(EPI)
+hist(EPI)
+hist(EPI, seq(30., 95.,1.0), prob = TRUE)
+lines(density(EPI, na.rm=TRUE,bw="SJ"))
+rug(EPI)
+
+plot(ecdf(EPI),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(EPI)
+qqline(EPI)
+x <-seq(30,95,1)
+qqplot(qt(ppoints(250),df=5),x,xlab="Q-Q plot for t dsn")
+qqline(x)
+
+EPI_daly <- EPI_data$DALY
+summary(EPI_daly)
+fivenum(EPI_daly, na.rm=TRUE)
+stem(EPI_daly)
+hist(EPI_daly)
+hist(EPI_daly, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_daly, na.rm=TRUE,bw="SJ"))
+rug(EPI_daly)
+
+plot(ecdf(EPI_daly),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(EPI_daly)
+qqline(EPI_daly)
+x2 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x2,xlab="Q-Q plot for t dsn")
+qqline(x2)
+
+EPI_wh <- EPI_data$WATER_H
+summary(EPI_wh)
+fivenum(EPI_wh, na.rm=TRUE)
+stem(EPI_wh)
+hist(EPI_wh)
+hist(EPI_wh, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_wh, na.rm=TRUE,bw="SJ"))
+rug(EPI_wh)
+
+plot(ecdf(EPI_wh),do.points=FALSE, verticals=TRUE)
+par(pty="s")
+qqnorm(EPI_wh)
+qqline(EPI_wh)
+x3 <-seq(0,100,1)
+qqplot(qt(ppoints(250),df=5),x3,xlab="Q-Q plot for t dsn")
+qqline(x3)
+
+#Comparing EPI and EPI_daly
+boxplot(EPI, EPI_daly)
+qqplot(EPI, EPI_daly)
+
+EPI_env <- EPI_data$ENVHEALTH
+summary(EPI_env)
+hist(EPI_env, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_env, na.rm=TRUE,bw="SJ"))
+rug(EPI_env)
+EPI_eco <- EPI_data$ECOSYSTEM
+summary(EPI_eco)
+hist(EPI_eco, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_eco, na.rm=TRUE,bw="SJ"))
+rug(EPI_eco)
+EPI_airh <- EPI_data$AIR_H
+summary(EPI_airh)
+hist(EPI_airh, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_airh, na.rm=TRUE,bw="SJ"))
+rug(EPI_airh)
+EPI_aire <- EPI_data$AIR_E
+summary(EPI_aire)
+EPI_we <- EPI_data$WATER_E
+summary(EPI_we)
+hist(EPI_we, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_we, na.rm=TRUE,bw="SJ"))
+rug(EPI_we)
+EPI_bio <- EPI_data$BIODIVERSITY
+summary(EPI_bio)
+hist(EPI_bio, seq(0, 100,1.0), prob = TRUE)
+lines(density(EPI_bio, na.rm=TRUE,bw="SJ"))
+rug(EPI_bio)
+
+boxplot(EPI, EPI_daly, EPI_env, EPI_eco, EPI_airh, EPI_wh, EPI_aire, EPI_we, EPI_bio)
+```
+Linear Bases and least-squares constraints
+```{r}
+multivariate<- read.csv("C:/Users/chambm6/Desktop/Data_Analytics/multivariate.csv")
+head(multivariate)
+attach(multivariate)
+mm <-lm(Homeowners~Immigrant)
+mm
+summary(mm)$coef
+plot(Homeowners~Immigrant)
+abline(mm)
+abline(mm,col=2, lwd=3)
+newImmigrantdata <-data.frame(Immigrant = c(0,20))
+mm %>% predict(newImmigrantdata)
+abline(mm)
+abline(mm, col=3, lwd=3)
+attributes(mm)
+mm$coefficients
+
+
+
+plot(mtcars$wt,mtcars$mpg)
+library(ggplot2)
+qplot(wt, mpg, data = mtcars)
+qplot(mtcars$wt, mtcars$mpg)
+ggplot(mtcars, aes(x=wt, y=mpg))+ geom_point()
+plot(pressure$temperature, pressure$pressure, type = "l")
+points(pressure$temperature, pressure$pressure)
+
+lines(pressure$temperature, pressure$pressure/2, col = "red")
+points(pressure$temperature, pressure$pressure/2, col="blue")
+qplot(pressure$temperature, pressure$pressure, geom = "line")
+qplot(temperature, pressure, data = pressure, geom = "line")
+ggplot(pressure, aes(x=temperature, y = pressure)) + geom_line() + geom_point()
+ggplot(pressure, aes(x=temperature, y = pressure)) + geom_line() + geom_point()
+
+barplot(BOD$demand, names.arg = BOD$Time)
+table(mtcars$cyl)
+barplot(table(mtcars$cyl))
+qplot(mtcars$cyl)
+qplot(factor(mtcars$cyl))
+qplot(factor(cyl), data = mtcars)
+ggplot(mtcars, aes(x=factor(cyl))) + geom_bar()
+
+hist(mtcars$mpg)
+hist(mtcars$mpg, breaks = 10)
+hist(mtcars$mpg, breaks = 5)
+hist(mtcars$mpg, breaks = 12)
+qplot(mpg, data = mtcars, binwidth = 4)
+ggplot(mtcars, aes(x=mpg)) + geom_histogram(binwidth =4)
+ggplot(mtcars, aes(x=mpg)) + geom_histogram(binwidth = 5)
+
+
+plot(ToothGrowth$supp, ToothGrowth$len)
+boxplot(len~supp, data = ToothGrowth)
+boxplot(len~supp + dose, data = ToothGrowth)
+qplot(ToothGrowth$supp, ToothGrowth$len, geom = "boxplot")
+qplot(supp, len, data = ToothGrowth, geom = "boxplot")
+ggplot(ToothGrowth, aes(x=supp, y=len)) + geom_boxplot()
+qplot(interaction(ToothGrowth$supp, ToothGrowth$dose), ToothGrowth$len, geom = "boxplot")
+qplot(interaction(supp, dose), len, data = ToothGrowth, geom = "boxplot")
+ggplot(ToothGrowth, aes(x=interaction(supp,dose),y=len)) + geom_boxplot()
+```
+
+
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
