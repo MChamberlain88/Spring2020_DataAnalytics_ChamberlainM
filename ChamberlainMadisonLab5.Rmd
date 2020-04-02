@@ -1,0 +1,246 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+wine_data <- read.table("http://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data", sep = ",")
+
+head(wine_data)
+colnames(wine_data) <- c("Cvs", "Alcohol", 
+                         "Malic_Acid", "Ash", "Alkalinity_of_Ash", 
+                         "Magnesium", "Total_Phenols", "Flavanoids", "NonFlavanoid_Phenols",
+                         "Proanthocyanins", "Color_Intensity", "Hue", "OD280/OD315_of_Diluted_Wine", 
+                         "Proline")
+heatmap(cor(wine_data),Rowv=NA,Colv=NA)
+cultivar_classes<- factor(wine_data$Cvs)
+cultivar_classes
+
+wine_data_PCA <- prcomp(scale(wine_data[,-1]))
+summary(wine_data_PCA)
+```
+```{r}
+#lab1_mosaic
+data(HairEyeColor)
+mosaicplot(HairEyeColor)
+margin.table(HairEyeColor,3)
+margin.table(HairEyeColor,c(1,3))
+
+#lab1_splom
+require(lattice)
+super.sym <- trellis.par.get("superpose.symbol")
+splom(~iris[1:4], groups = Species, data = iris,
+      panel = panel.superpose,
+      key = list(title = "Three Varieties of Iris",
+                 columns = 3, 
+                 points = list(pch = super.sym$pch[1:3],
+                 col = super.sym$col[1:3]),
+                 text = list(c("Setosa", "Versicolor", "Virginica"))))
+splom(~iris[1:3]|Species, data = iris, 
+      layout=c(2,2), pscales = 0,
+      varnames = c("Sepal\nLength", "Sepal\nWidth", "Petal\nLength"),
+      page = function(...) {
+          ltext(x = seq(.6, .8, length.out = 4), 
+                y = seq(.9, .6, length.out = 4), 
+                labels = c("Three", "Varieties", "of", "Iris"),
+                cex = 2)
+      })
+parallelplot(~iris[1:4] | Species, iris) 
+parallelplot(~iris[1:4], iris, groups = Species,
+             horizontal.axis = FALSE, scales = list(x = list(rot = 90)))
+
+#Lab1_spm
+install.packages("car")
+require(car)
+scatterplotMatrix(iris)
+# and
+scatterplotMatrix(swiss)
+
+#Lab1_wknn
+require(kknn)
+data(ionosphere)
+ionosphere.learn <- ionosphere[1:200,]
+ionosphere.valid <- ionosphere[-c(1:200),]
+fit.kknn <- kknn(class ~ ., ionosphere.learn, ionosphere.valid)
+table(ionosphere.valid$class, fit.kknn$fit)
+(fit.train1 <- train.kknn(class ~ ., ionosphere.learn, kmax = 15, 
+	kernel = c("triangular", "rectangular", "epanechnikov", "optimal"), distance = 1))
+table(predict(fit.train1, ionosphere.valid), ionosphere.valid$class)
+(fit.train2 <- train.kknn(class ~ ., ionosphere.learn, kmax = 15, 
+	kernel = c("triangular", "rectangular", "epanechnikov", "optimal"), distance = 2))
+table(predict(fit.train2, ionosphere.valid), ionosphere.valid$class)
+
+
+data(iris)
+m <- dim(iris)[1]
+val <- sample(1:m, size = round(m/3), replace = FALSE, 
+	prob = rep(1/m, m)) 
+iris.learn <- iris[-val,]
+iris.valid <- iris[val,]
+iris.kknn <- kknn(Species~., iris.learn, iris.valid, distance = 1,
+	kernel = "triangular")
+summary(iris.kknn)
+fit <- fitted(iris.kknn)
+table(iris.valid$Species, fit)
+pcol <- as.character(as.numeric(iris.valid$Species))
+pairs(iris.valid[1:4], pch = pcol, col = c("green3", "red")
+	[(iris.valid$Species != fit)+1])
+
+#Lab2_nbayes1
+
+if (!require("e1071")) {
+   install.packages("e1071", dependencies = TRUE)
+   library(e1071)}
+
+require(mlbench)
+data(HouseVotes84)
+model <- naiveBayes(Class ~ ., data = HouseVotes84)
+predict(model, HouseVotes84[1:10,-1])
+predict(model, HouseVotes84[1:10,-1], type = "raw")
+
+pred <- predict(model, HouseVotes84[,-1])
+table(pred, HouseVotes84$Class)
+
+## Example of using a contingency table:
+data(Titanic)
+m <- naiveBayes(Survived ~ ., data = Titanic)
+m
+predict(m, as.data.frame(Titanic)[,1:3])
+
+## Example with metric predictors:
+data(iris)
+m <- naiveBayes(Species ~ ., data = iris)
+## alternatively:
+m <- naiveBayes(iris[,-5], iris[,5])
+m
+table(predict(m, iris[,-5]), iris[,5])
+
+#Lab2_nbayes2
+data(Titanic)
+mdl <- naiveBayes(Survived ~ ., data = Titanic)
+mdl
+
+#Lab2_nbayes3
+
+require(mlbench)
+data(HouseVotes84)
+library(klaR)
+model <- NaiveBayes(Class ~ ., data = HouseVotes84)
+predict(model, HouseVotes84[1:10,-1])
+
+pred <- predict(model, HouseVotes84[,-1])
+table(pred$class, HouseVotes84$Class)
+
+#Lab3_kknn1
+require(kknn)
+data(iris)
+m <- dim(iris)[1]
+val <- sample(1:m, size = round(m/3), replace = FALSE, prob = rep(1/m, m)) 
+iris.learn <- iris[-val,] 	# train
+iris.valid <- iris[val,]	# test
+iris.kknn <- train.kknn(Species~., iris.learn, distance = 1, kernel = c("triangular", "epanechnikov", "biweight", "triweight", "cos", "inv", "gaussian", "rank", "optimal") )
+summary(iris.kknn)
+table(predict(iris.kknn,iris.valid),iris.valid$Species)
+
+head(iris.kknn$W)
+head(iris.kknn$D)
+head(iris.kknn$C)
+head(iris.kknn$fitted.values)
+
+#Lab3_randomForest1
+require(randomForest)
+fitKF <- randomForest(Kyphosis ~ Age + Number + Start,   data=kyphosis)
+print(fitKF) 	# view results
+importance(fitKF) # importance of each predictor
+#
+fitSwiss <- randomForest(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+print(fitSwiss) # view results
+importance(fitSwiss) # importance of each predictor
+varImpPlot(fitSwiss)
+
+plot(fitSwiss)
+
+getTree(fitSwiss,1, labelVar=TRUE)
+
+help(randomForest) # look at all the package contents and the randomForest method options
+
+# look at rfcv - random forest cross-validation - 
+help(rfcv)
+
+# other data....
+data(imports85)
+
+#Lab3_rpart1
+require(rpart)
+Swiss_rpart <- rpart(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+plot(Swiss_rpart) # try some different plot options
+text(Swiss_rpart) # try some different text options
+
+#Lab3_rpart2
+# Regression Tree Example
+require(rpart)
+# build the  tree
+fitM <- rpart(Mileage~Price + Country + Reliability + Type, method="anova", data=cu.summary)
+printcp(fitM) # display the results
+plotcp(fitM)
+summary(fitM)
+par(mfrow=c(1,2)) 
+rsq.rpart(fitM) # visualize cross-validation results
+# plot tree
+plot(fitM, uniform=TRUE, main="Regression Tree for Mileage ")
+text(fitM, use.n=TRUE, all=TRUE, cex=.8)
+# prune the tree
+pfitM<- prune(fitM, cp=0.01160389) # from cptable??? adjust this to see the effect
+# plot the pruned tree
+plot(pfitM, uniform=TRUE, main="Pruned Regression Tree for Mileage")
+text(pfitM, use.n=TRUE, all=TRUE, cex=.8)
+post(pfitM, file = "ptree2.ps", title = "Pruned Regression Tree for Mileage")
+
+#Lab3_rpart3
+
+library(e1071)
+library(rpart)
+data(Glass, package="mlbench")
+index <- 1:nrow(Glass)
+testindex <- sample(index, trunc(length(index)/3))
+testset <- Glass[testindex,]
+trainset <- Glass[-testindex,]
+rpart.model <- rpart(Type ~ ., data = trainset)
+rpart.pred <- predict(rpart.model, testset[,-10], type = "class")
+printcp(rpart.model)
+plotcp(rpart.model)
+
+rsq.rpart(rpart.model)
+print(rpart.model)
+
+plot(rpart.model,compress=TRUE)
+text(rpart.model, use.n=TRUE)
+plot(rpart.pred)
+
+#Lab3_rpart4
+fitK <- rpart(Kyphosis ~ Age + Number + Start, method="class", data=kyphosis)
+printcp(fitK) # display the results
+plotcp(fitK) # visualize cross-validation results
+summary(fitK) # detailed summary of splits
+# plot tree
+plot(fitK, uniform=TRUE, main="Classification Tree for Kyphosis")
+text(fitK, use.n=TRUE, all=TRUE, cex=.8)
+# create attractive postscript plot of tree
+post(fitK, file = "kyphosistree.ps", title = "Classification Tree for Kyphosis") # might need to convert to PDF (distill)
+
+pfitK<- prune(fitK, cp=   fitK$cptable[which.min(fitK$cptable[,"xerror"]),"CP"])
+plot(fitK, uniform=TRUE, main="Pruned Classification Tree for Kyphosis")
+text(fitK, use.n=TRUE, all=TRUE, cex=.8)
+post(fitK, file = "tree.ps", title = "Pruned Classification Tree for Kyphosis")
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
