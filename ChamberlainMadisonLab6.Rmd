@@ -1,0 +1,298 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+#Group 3
+#lab1_rpart1
+require(rpart)
+Swiss_rpart <- rpart(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+plot(Swiss_rpart) # try some different plot options
+text(Swiss_rpart) # try some different text options
+
+#lab2_rpart2
+# Regression Tree Example
+require(rpart)
+# build the  tree
+fitM <- rpart(Mileage~Price + Country + Reliability + Type, method="anova", data=cu.summary)
+printcp(fitM) # display the results
+plotcp(fitM)
+summary(fitM)
+par(mfrow=c(1,2)) 
+rsq.rpart(fitM) # visualize cross-validation results
+# plot tree
+plot(fitM, uniform=TRUE, main="Regression Tree for Mileage ")
+text(fitM, use.n=TRUE, all=TRUE, cex=.8)
+# prune the tree
+pfitM<- prune(fitM, cp=0.01160389) # from cptable??? adjust this to see the effect
+# plot the pruned tree
+plot(pfitM, uniform=TRUE, main="Pruned Regression Tree for Mileage")
+text(pfitM, use.n=TRUE, all=TRUE, cex=.8)
+post(pfitM, file = "ptree2.ps", title = "Pruned Regression Tree for Mileage")
+
+#lab1_rpart3
+library(e1071)
+library(rpart)
+data(Glass)
+index <- 1:nrow(Glass)
+testindex <- sample(index, trunc(length(index)/3))
+testset <- Glass[testindex,]
+trainset <- Glass[-testindex,]
+rpart.model <- rpart(Type ~ ., data = trainset)
+rpart.pred <- predict(rpart.model, testset[,-10], type = "class")
+printcp(rpart.model)
+plotcp(rpart.model)
+
+rsq.rpart(rpart.model)
+print(rpart.model)
+
+plot(rpart.model,compress=TRUE)
+text(rpart.model, use.n=TRUE)
+plot(rpart.pred)
+
+#lab1_rpart4
+fitK <- rpart(Kyphosis ~ Age + Number + Start, method="class", data=kyphosis)
+printcp(fitK) # display the results
+plotcp(fitK) # visualize cross-validation results
+summary(fitK) # detailed summary of splits
+# plot tree
+plot(fitK, uniform=TRUE, main="Classification Tree for Kyphosis")
+text(fitK, use.n=TRUE, all=TRUE, cex=.8)
+# create attractive postscript plot of tree
+post(fitK, file = "kyphosistree.ps", title = "Classification Tree for Kyphosis") # might need to convert to PDF (distill)
+
+#lab1_ctree1
+require(rpart)
+Swiss_rpart <- rpart(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+plot(Swiss_rpart) # try some different plot options
+text(Swiss_rpart) # try some different text options
+
+require(party)
+
+treeSwiss<-ctree(Species ~ ., data=iris)
+plot(treeSwiss)
+
+treeFert<-ctree(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+
+cf = cforest(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+# look at help info, vary parameters.
+
+
+#lab1_ctree2
+# Conditional Inference Tree for Mileage
+fit2M <- ctree(Mileage~Price + Country + Reliability + Type, data=na.omit(cu.summary))
+summary(fit2M)
+# plot tree
+plot(fit2M, uniform=TRUE, main="CI Tree Tree for Mileage ")
+
+#lab1_ctree3
+fitK <- ctree(Kyphosis ~ Age + Number + Start, data=kyphosis)
+plot(fitK, main="Conditional Inference Tree for Kyphosis")
+plot(fitK, main="Conditional Inference Tree for Kyphosis",type="simple")
+
+#etc.
+
+#lab1_randomforest1
+require(randomForest)
+fitKF <- randomForest(Kyphosis ~ Age + Number + Start,   data=kyphosis)
+print(fitKF) 	# view results
+importance(fitKF) # importance of each predictor
+#
+fitSwiss <- randomForest(Fertility ~ Agriculture + Education + Catholic, data = swiss)
+print(fitSwiss) # view results
+importance(fitSwiss) # importance of each predictor
+varImpPlot(fitSwiss)
+
+plot(fitSwiss)
+
+getTree(fitSwiss,1, labelVar=TRUE)
+
+help(randomForest) # look at all the package contents and the randomForest method options
+
+# look at rfcv - random forest cross-validation - 
+help(rfcv)
+
+
+
+
+
+```
+```{r}
+#SVM
+
+library(e1071)
+set.seed(1)
+x = matrix(rnorm(20*2),ncol=2)
+y=c(rep(-1,10),rep(1,10))
+x[y==1,]=x[y==1,]+1
+x
+y
+plot(x,col=(3-y))
+dat <-data.frame(x=x,y=as.factor(y))
+svmfit <- svm(y~.,data=dat, kernel="linear", cost=10, scale=FALSE)
+plot(svmfit,dat)
+
+svmfit$index
+summary(svmfit)
+
+svmfit1 <- svm(y~., data=dat, kernel="linear", cost=.1, scale = FALSE)
+plot(svmfit1, dat)
+svmfit1$index
+```
+```{r}
+#Continued...
+set.seed(1)
+tune.out <- tune(svm, y~., data = dat,kernel="linear", ranges = list(cost=c(.001, .01, .1, 1, 5, 10, 100)))
+summary(tune.out)
+bestmod = tune.out$best.model
+summary(bestmod)
+xtest=matrix(rnorm(20*2), ncol=2)
+ytest = sample(c(-1,1),20,  rep = TRUE)
+xtest[ytest==1,]=xtest[ytest==1,] +1
+testdat = data.frame(x=xtest, y=as.factor(ytest))
+ypred <- predict(bestmod, testdat)
+table(predict=ypred, truth=testdat$y)
+
+svmfit <- svm(y~.,data = dat, kernel = "linear", cost = .01, scale = FALSE)
+ypred = predict(svmfit, testdat)
+table(predict=ypred, truth = testdat$y)
+x[y==1,]=x[y==1,]+.5
+plot(x,col=(y+5)/2,pch=19)
+
+dat = data.frame(x=x, y=as.factor(y))
+svmfit2 <- svm(y~., data = dat, kernel = "linear", cost = 1e5)
+summary(svmfit2)
+plot(svmfit2,dat)
+
+svmfit3 <- svm(y~., data=dat, kernel="linear", cost = 1)
+summary(svmfit3)
+plot(svmfit3, dat)
+```
+```{r}
+#SVM Application to Gene Expression Dataset
+
+library(e1071)
+library(ISLR)
+names(Khan)
+dim(Khan$xtrain)
+dim(Khan$xtest)
+
+length(Khan$ytrain)
+length(Khan$ytest)
+table(Khan$ytrain)
+table(Khan$ytest)
+dat <- data.frame(x = Khan$xtrain, y = as.factor(Khan$ytrain))
+out <- svm(y~., data = dat, kernel= "linear", cost = 10)
+summary(out)
+
+dat.te = data.frame(x=Khan$xtest, y = as.factor(Khan$ytest))
+pred.te = predict(out, newdata = dat.te)
+table(pred.te, dat.te$y)
+```
+```{r}
+#lab1_svm1
+
+n <- 150 # number of data points
+p <- 2 # dimension
+sigma <- 1 # variance of the distribution
+meanpos <- 0 # centre of the distribution of positive examples
+meanneg <- 3 # centre of the distribution of negative examples
+npos <- round(n/2) # number of positive examples
+nneg <- n-npos # number of negative examples
+# Generate the positive and negative examples
+xpos <- matrix(rnorm(npos*p,mean=meanpos,sd=sigma),npos,p)
+xneg <- matrix(rnorm(nneg*p,mean=meanneg,sd=sigma),npos,p)
+x <- rbind(xpos,xneg)
+# Generate the labels
+y <- matrix(c(rep(1,npos),rep(-1,nneg)))
+# Visualize the data
+plot(x,col=ifelse(y>0,1,2))
+legend("topleft",c('Positive','Negative'),col=seq(2),pch=1,text.col=seq(2))
+#
+ntrain <- round(n*0.8) # number of training examples
+tindex <- sample(n,ntrain) # indices of training samples
+xtrain <- x[tindex,]
+xtest <- x[-tindex,]
+ytrain <- y[tindex]
+ytest <- y[-tindex]
+istrain=rep(0,n)
+istrain[tindex]=1
+# Visualize
+plot(x,col=ifelse(y>0,1,2),pch=ifelse(istrain==1,1,2))
+legend("topleft",c('Positive Train','Positive Test','Negative Train','Negative Test'),col=c(1,1,2,2), pch=c(1,2,1,2), text.col=c(1,1,2,2))
+
+#Karatzoglou
+library("kernlab")
+data("iris")
+irismodel <- ksvm(Species~., data = iris, type = "C-bsvc", kernel = "rbfdot", kpar = list(sigma = .1), C = 10, prob.model = TRUE)
+irismodel
+predict(irismodel, iris[c(3, 10, 56, 68,
++ 107, 120), -5], type = "probabilities")
+predict(irismodel, iris[c(3, 10, 56, 68,
++ 107, 120), -5], type = "decision")
+k <- function(x, y) {
+(sum(x * y) + 1) * exp(0.001 * sum((x - y)^2))
+  
+class(k) <- "kernel"
+data("promotergene")
+gene <- ksvm(Class ~ ., data = promotergene,
+kernel = k, C = 10, cross = 5)
+gene
+
+x <- rbind(matrix(rnorm(120), , 2), matrix(rnorm(120,mean = 3), , 2))
+y <- matrix(c(rep(1, 60), rep(-1, 60)))
+svp <- ksvm(x, y, type = "C-svc", kernel = "rbfdot",kpar = list(sigma = 2))
+plot(svp)
+
+library("e1071")
+model <- svm(Species ~ ., data = iris_train,
+method = "C-classification", kernel = "radial",cost = 10, gamma = 0.1)
+summary(model)
+svm(formula = Species ~ ., data = iris_train, method = "C-classification",
+kernel = "radial", cost = 10, gamma = 0.1)
+
+plot(model, iris_train, Petal.Width ~
+Petal.Length, slice = list(Sepal.Width = 3,
+Sepal.Length = 4))
+
+(pred <- predict(model, head(iris), decision.values = TRUE))
+
+attr(pred, "decision.values")
+
+tobj <- tune.svm(type ~ ., data = spam_train[1:300,], gamma = 10^(-6:-3), cost = 10^(1:2))
+summary(tobj)
+
+plot(tobj, transform.x = log10, xlab = expression(log[10](gamma)),
+ylab = "C")
+
+bestGamma <- tobj$best.parameters[[1]]
+bestC <- tobj$best.parameters[[2]]
+model <- svm(type ~ ., data = spam_train,
+cost = bestC, gamma = bestGamma, cross = 10)
+summary(model)
+
+svm(formula = type ~ ., data = spam_train, cost = bestC, gamma = bestGamma,cross = 10)
+
+pred <- predict(model, spam_test)
+(acc <- table(pred, spam_test$type))
+
+classAgreement(acc)
+
+
+
+
+
+
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
